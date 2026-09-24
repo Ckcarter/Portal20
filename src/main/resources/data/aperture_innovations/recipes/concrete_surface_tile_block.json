@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "WW",
+    "WW"
+  ],
+  "key": {
+    "W": {
+      "item": "aperture_innovations:concrete_surface_block"
+    }
+  },
+  "result": {
+    "item": "aperture_innovations:concrete_surface_tile_block",
+    "count": 4
+  }
+}

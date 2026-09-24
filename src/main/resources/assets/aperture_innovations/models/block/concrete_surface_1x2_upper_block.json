@@ -1,0 +1,8 @@
+{
+  "parent": "aperture_innovations:block/1x2_vertical_block",
+  "textures": {
+	"0": "aperture_innovations:block/concrete_surface_block",
+	"1": "aperture_innovations:block/concrete_surface_1x2_upper_block",
+	"particle": "aperture_innovations:block/concrete_surface_block"
+  }
+}

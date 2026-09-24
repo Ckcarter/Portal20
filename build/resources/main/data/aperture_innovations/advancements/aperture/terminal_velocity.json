@@ -1,0 +1,27 @@
+{
+  "criteria": {
+    "terminal_velocity": {
+      "trigger": "aperture_innovations:portal_travel",
+      "conditions": {
+        "flight": 800
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "item": "aperture_innovations:portal_gun"
+    },
+    "title": {
+      "translate": "advancements.aperture_innovations.aperture.terminal_velocity.title"
+    },
+    "description": {
+      "translate": "advancements.aperture_innovations.aperture.terminal_velocity.description"
+    }
+  },
+  "parent": "aperture_innovations:aperture/long_jump",
+  "requirements": [
+    [
+      "terminal_velocity"
+    ]
+  ]
+}

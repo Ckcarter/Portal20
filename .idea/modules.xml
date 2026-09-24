@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/Aperture Innovations.aperture-innovations.test.iml" filepath="$PROJECT_DIR$/.idea/modules/Aperture Innovations.aperture-innovations.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/Portal20.main.iml" filepath="$PROJECT_DIR$/.idea/modules/Portal20.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/Portal20.test.iml" filepath="$PROJECT_DIR$/.idea/modules/Portal20.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/net.mistersecret312.aperture-innovations.test.iml" filepath="$PROJECT_DIR$/.idea/modules/net.mistersecret312.aperture-innovations.test.iml" />
+    </modules>
+  </component>
+</project>

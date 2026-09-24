@@ -1,0 +1,33 @@
+{
+  "minecraft:recipes/decorations/crafting_table": {
+    "criteria": {
+      "unlock_right_away": "2026-09-24 08:05:13 -0500"
+    },
+    "done": true
+  },
+  "mekanism:root": {
+    "criteria": {
+      "automatic": "2026-09-24 08:05:13 -0500"
+    },
+    "done": true
+  },
+  "minecraft:adventure/adventuring_time": {
+    "criteria": {
+      "minecraft:plains": "2026-09-24 08:05:14 -0500"
+    },
+    "done": false
+  },
+  "aperture_innovations:aperture/root": {
+    "criteria": {
+      "get_portal_gun": "2026-09-24 08:18:35 -0500"
+    },
+    "done": true
+  },
+  "minecraft:adventure/root": {
+    "criteria": {
+      "killed_something": "2026-09-24 08:21:57 -0500"
+    },
+    "done": true
+  },
+  "DataVersion": 3465
+}

@@ -1,0 +1,30 @@
+{
+  "mappings": {
+    "net/mistersecret312/aperture_innovations/mixin/LocalPlayerMixin": {
+      "suffocatesAt(Lnet/minecraft/core/BlockPos;)Z": "Lnet/minecraft/client/player/LocalPlayer;m_108746_(Lnet/minecraft/core/BlockPos;)Z"
+    },
+    "net/mistersecret312/aperture_innovations/mixin/EntityMixin": {
+      "isInWall": "Lnet/minecraft/world/entity/Entity;m_5830_()Z",
+      "tick()V": "Lnet/minecraft/world/entity/Entity;m_8119_()V"
+    },
+    "net/mistersecret312/aperture_innovations/mixin/LivingEntityMixin": {
+      "travel(Lnet/minecraft/world/phys/Vec3;)V": "Lnet/minecraft/world/entity/LivingEntity;m_7023_(Lnet/minecraft/world/phys/Vec3;)V",
+      "Lnet/minecraft/world/entity/LivingEntity;handleRelativeFrictionAndCalculateMovement(Lnet/minecraft/world/phys/Vec3;F)Lnet/minecraft/world/phys/Vec3;": "Lnet/minecraft/world/entity/LivingEntity;m_21074_(Lnet/minecraft/world/phys/Vec3;F)Lnet/minecraft/world/phys/Vec3;"
+    }
+  },
+  "data": {
+    "searge": {
+      "net/mistersecret312/aperture_innovations/mixin/LocalPlayerMixin": {
+        "suffocatesAt(Lnet/minecraft/core/BlockPos;)Z": "Lnet/minecraft/client/player/LocalPlayer;m_108746_(Lnet/minecraft/core/BlockPos;)Z"
+      },
+      "net/mistersecret312/aperture_innovations/mixin/EntityMixin": {
+        "isInWall": "Lnet/minecraft/world/entity/Entity;m_5830_()Z",
+        "tick()V": "Lnet/minecraft/world/entity/Entity;m_8119_()V"
+      },
+      "net/mistersecret312/aperture_innovations/mixin/LivingEntityMixin": {
+        "travel(Lnet/minecraft/world/phys/Vec3;)V": "Lnet/minecraft/world/entity/LivingEntity;m_7023_(Lnet/minecraft/world/phys/Vec3;)V",
+        "Lnet/minecraft/world/entity/LivingEntity;handleRelativeFrictionAndCalculateMovement(Lnet/minecraft/world/phys/Vec3;F)Lnet/minecraft/world/phys/Vec3;": "Lnet/minecraft/world/entity/LivingEntity;m_21074_(Lnet/minecraft/world/phys/Vec3;F)Lnet/minecraft/world/phys/Vec3;"
+      }
+    }
+  }
+}

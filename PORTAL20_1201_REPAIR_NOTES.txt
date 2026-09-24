@@ -1,0 +1,13 @@
+Portal20 / Aperture Innovations Forge 1.20.1 compile repair
+
+This repair replaces the uploaded 1.21-style source with the previously converted Forge 1.20.1 source,
+while preserving the current Aperture Innovations package/mod ID.
+
+Removed known compile blockers:
+- NeoForge-only source usage
+- GeckoLib source dependencies
+- Minecraft 1.21 HolderLookup imports/signatures
+- ResourceLocation.fromNamespaceAndPath (1.21 API)
+- Parchment Librarian requirement (project uses official 1.20.1 mappings)
+
+Preserved compatibility class names for LargeButtonModel, PedestalButtonModel and PedestalButtonRenderer.

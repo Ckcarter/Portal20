@@ -1,0 +1,43 @@
+{
+  "vertex":   "aperture_innovations:portal_corridor",
+  "fragment": "aperture_innovations:portal_corridor",
+
+  "blend": {
+    "func": "add",
+    "srcrgb": "one",
+    "dstrgb": "one_minus_src_alpha"
+  },
+
+  "attributes": [
+    "Position",
+    "UV0",
+    "Color"
+  ],
+
+  "samplers": [
+    { "name": "Sampler0" },
+    { "name": "Sampler1" }
+  ],
+
+  "uniforms": [
+    { "name": "EyeDist",       "type": "float",     "count": 1, "values": [ 1.0 ] },
+
+    { "name": "ProjMat",       "type": "matrix4x4", "count": 16, "values": [1,0,0,0,  0,1,0,0,  0,0,1,0,  0,0,0,1] },
+    { "name": "GameTime",      "type": "float",     "count": 1,  "values": [0] },
+    { "name": "Layers",        "type": "int",       "count": 1,  "values": [0] },
+
+    { "name": "Parallax",      "type": "float",     "count": 2,  "values": [0, 0] },
+    { "name": "Segment",       "type": "float",     "count": 1,  "values": [1] },
+    { "name": "MaxFrames",     "type": "int",       "count": 1,  "values": [24] },
+    { "name": "EdgeThickness", "type": "float",     "count": 1,  "values": [0.010] },
+    { "name": "EdgeSoftness",  "type": "float",     "count": 1,  "values": [0.75] },
+    { "name": "DepthFade",     "type": "float",     "count": 1,  "values": [0.12] },
+
+
+    { "name": "RimColor",      "type": "float",     "count": 3,  "values": [0.70, 0.20, 1.00] },
+    { "name": "RimDepth",      "type": "float",     "count": 1,  "values": [0.38] },
+    { "name": "RimThickness",  "type": "float",     "count": 1,  "values": [0.00] },
+    { "name": "RimSoftness",   "type": "float",     "count": 1,  "values": [1.75] },
+    { "name": "RimSamples",    "type": "int",       "count": 1,  "values": [8] }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "B",
+    "B"
+  ],
+  "key": {
+    "B": {
+      "item": "aperture_innovations:metal_surface_block"
+    }
+  },
+  "result": {
+    "item": "aperture_innovations:metal_surface_1x2_block",
+    "count": 2
+  }
+}

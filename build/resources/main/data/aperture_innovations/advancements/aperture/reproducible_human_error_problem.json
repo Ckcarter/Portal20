@@ -1,0 +1,30 @@
+{
+  "criteria": {
+    "death": {
+      "trigger": "aperture_innovations:near_portal_death",
+      "conditions": {
+        "isFloor": true,
+        "distance": 1
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "item": "aperture_innovations:portal_gun"
+    },
+    "title": {
+      "translate": "advancements.aperture_innovations.aperture.reproducible_human_error_problem.title"
+    },
+    "description": {
+      "translate": "advancements.aperture_innovations.aperture.reproducible_human_error_problem.description"
+    },
+    "frame": "challenge",
+    "hidden": true
+  },
+  "parent": "aperture_innovations:aperture/root",
+  "requirements": [
+    [
+      "death"
+    ]
+  ]
+}

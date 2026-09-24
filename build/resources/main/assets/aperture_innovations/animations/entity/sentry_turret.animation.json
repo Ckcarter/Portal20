@@ -1,0 +1,35 @@
+{
+  "format_version": "1.8.0",
+  "animations": {
+    "animation.sentry_turret.idle": {
+      "loop": true,
+      "animation_length": 0.25,
+      "bones": {
+        "left_gun": {"position": [0, 0, 0]},
+        "right_gun": {"position": [0, 0, 0]},
+        "root": {"rotation": [0, 0, 0]}
+      }
+    },
+    "animation.sentry_turret.open": {
+      "loop": true,
+      "animation_length": 0.25,
+      "bones": {
+        "left_gun": {"position": [-3.5, 0, 0]},
+        "right_gun": {"position": [3.5, 0, 0]},
+        "root": {"rotation": [0, 0, 0]}
+      }
+    },
+    "animation.sentry_turret.fallen": {
+      "loop": true,
+      "animation_length": 0.25,
+      "bones": {
+        "left_gun": {"position": [-1.5, 0, 0]},
+        "right_gun": {"position": [1.5, 0, 0]},
+        "root": {
+          "rotation": [0, 0, 82],
+          "position": [0, -5, 0]
+        }
+      }
+    }
+  }
+}

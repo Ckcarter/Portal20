@@ -1,0 +1,11 @@
+{
+  "values":
+  [
+    "minecraft:obsidian",
+    "minecraft:black_concrete",
+    "minecraft:black_terracotta",
+    "aperture_innovations:metal_surface_block",
+    "aperture_innovations:metal_surface_tile_block",
+    "aperture_innovations:metal_surface_1x2_block"
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "criteria": {
+    "long_jump": {
+      "trigger": "aperture_innovations:portal_travel",
+      "conditions": {
+        "jump": 100
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "item": "aperture_innovations:portal_gun"
+    },
+    "title": {
+      "translate": "advancements.aperture_innovations.aperture.long_jump.title"
+    },
+    "description": {
+      "translate": "advancements.aperture_innovations.aperture.long_jump.description"
+    }
+  },
+  "parent": "aperture_innovations:aperture/root",
+  "requirements": [
+    [
+      "long_jump"
+    ]
+  ]
+}

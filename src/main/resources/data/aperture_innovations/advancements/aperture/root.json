@@ -1,0 +1,42 @@
+{
+  "display":
+  {
+    "icon":
+    {
+      "item": "aperture_innovations:portal_gun"
+    },
+    "title":
+    {
+      "translate": "advancements.aperture_innovations.aperture.root.title"
+    },
+    "description":
+    {
+      "translate": "advancements.aperture_innovations.aperture.root.description"
+    },
+    "frame": "task",
+    "show_toast": false,
+    "announce_to_chat": true,
+    "hidden": false,
+    "background": "aperture_innovations:textures/block/concrete_surface_tile_block.png"
+  },
+  "criteria":
+  {
+    "get_portal_gun":
+    {
+      "trigger": "minecraft:inventory_changed",
+      "conditions":
+      {
+        "items":
+        [
+          {"items":["aperture_innovations:portal_gun"]}
+        ]
+      }
+    }
+  },
+  "requirements":
+  [
+    [
+      "get_portal_gun"
+    ]
+  ]
+}

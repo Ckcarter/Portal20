@@ -1,0 +1,44 @@
+{
+	"parent": "minecraft:recipes/root",
+	"criteria":
+	{
+		"has_boots":
+		{
+			"conditions":
+			{
+				"items":
+				[
+					{
+						"items":
+						[
+							"minecraft:netherite_boots"
+						]
+					}
+				]
+			},
+			"trigger": "minecraft:inventory_changed"
+		},
+		"has_the_recipe":
+		{
+			"conditions":
+			{
+				"recipe": "aperture_innovations:long_fall_boots"
+			},
+			"trigger": "minecraft:recipe_unlocked"
+		}
+	},
+	"requirements":
+	[
+		[
+			"has_boots",
+			"has_the_recipe"
+		]
+	],
+	"rewards":
+	{
+		"recipes":
+		[
+			"aperture_innovations:long_fall_boots"
+		]
+	}
+}

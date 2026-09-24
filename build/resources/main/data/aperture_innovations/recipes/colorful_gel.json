@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " D ",
+    "DSD",
+    " D "
+  ],
+  "key": {
+    "S": {
+      "item": "minecraft:slime_ball"
+    },
+    "D": {
+      "tag": "forge:dyes"
+    }
+  },
+  "result": {
+    "item": "aperture_innovations:colorful_gel"
+  }
+}

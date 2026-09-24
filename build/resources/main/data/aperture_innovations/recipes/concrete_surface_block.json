@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "WI",
+    "IW"
+  ],
+  "key": {
+    "W": {
+      "item": "minecraft:white_concrete"
+    },
+    "I": {
+      "item": "minecraft:quartz"
+    }
+  },
+  "result": {
+    "item": "aperture_innovations:concrete_surface_block",
+    "count": 4
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "aperture_innovations:item/colorful_gel_tube",
+    "layer1": "aperture_innovations:item/colorful_gel_color"
+  }
+}

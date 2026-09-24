@@ -1,0 +1,29 @@
+{
+  "criteria": {
+    "long_jump": {
+      "trigger": "aperture_innovations:portal_travel",
+      "conditions": {
+        "lunacy": true
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "item": "aperture_innovations:portal_gun"
+    },
+    "title": {
+      "translate": "advancements.aperture_innovations.aperture.lunacy.title"
+    },
+    "description": {
+      "translate": "advancements.aperture_innovations.aperture.lunacy.description"
+    },
+    "frame": "challenge",
+    "hidden": true
+  },
+  "parent": "aperture_innovations:aperture/reproducible_human_error_problem",
+  "requirements": [
+    [
+      "long_jump"
+    ]
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "state=single": {
+      "model": "aperture_innovations:block/concrete_surface_block"
+    },
+    "state=upper": {
+      "model": "aperture_innovations:block/concrete_surface_1x2_upper_block"
+    },
+    "state=lower": {
+      "model": "aperture_innovations:block/concrete_surface_1x2_lower_block"
+    }
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "BB",
+    "BB"
+  ],
+  "key": {
+    "B": {
+      "item": "aperture_innovations:metal_surface_block"
+    }
+  },
+  "result": {
+    "item": "aperture_innovations:metal_surface_tile_block",
+    "count": 4
+  }
+}

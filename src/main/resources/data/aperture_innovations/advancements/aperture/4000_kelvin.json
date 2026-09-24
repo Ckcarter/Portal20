@@ -1,0 +1,35 @@
+{
+  "criteria": {
+    "4000_kelvin": {
+      "trigger": "aperture_innovations:thrown_into_fluid",
+      "conditions": {
+        "item": {
+          "items":
+          [
+            "aperture_innovations:portal_gun"
+          ]
+        },
+        "fluid": {
+          "fluid": "minecraft:lava"
+        }
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "item": "aperture_innovations:portal_gun"
+    },
+    "title": {
+      "translate": "advancements.aperture_innovations.aperture.4000_kelvin.title"
+    },
+    "description": {
+      "translate": "advancements.aperture_innovations.aperture.4000_kelvin.description"
+    }
+  },
+  "parent": "aperture_innovations:aperture/root",
+  "requirements": [
+    [
+      "4000_kelvin"
+    ]
+  ]
+}

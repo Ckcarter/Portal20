@@ -1,0 +1,29 @@
+{
+	"format_version": "1.8.0",
+	"animations": {
+		"press": {
+			"animation_length": 1.25,
+			"bones": {
+				"Button": {
+					"position": {
+						"0.0": {
+							"vector": [0, 0, 0]
+						},
+						"0.125": {
+							"vector": [0, -1, 0.4],
+							"easing": "easeOutSine"
+						},
+						"1.125": {
+							"vector": [0, -1, 0.4],
+							"easing": "easeInSine"
+						},
+						"1.25": {
+							"vector": [0, 0, 0]
+						}
+					}
+				}
+			}
+		}
+	},
+	"geckolib_format_version": 2
+}

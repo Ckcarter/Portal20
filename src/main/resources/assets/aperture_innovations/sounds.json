@@ -1,0 +1,205 @@
+{
+  "portal_ambient": {
+    "subtitle": "sound.aperture_innovations.portal_ambient",
+    "sounds": [
+      "aperture_innovations:portal_ambient"
+    ]
+  },
+  "portal_enter": {
+    "subtitle": "sound.aperture_innovations.portal_enter",
+    "sounds": [
+      "aperture_innovations:portal_enter_1",
+      "aperture_innovations:portal_enter_2",
+      "aperture_innovations:portal_enter_3"
+    ]
+  },
+  "portal_fizzle": {
+    "subtitle": "sound.aperture_innovations.portal_fizzle",
+    "sounds": [
+      "aperture_innovations:portal_fizzle_1",
+      "aperture_innovations:portal_fizzle_2"
+    ]
+  },
+  "portal_gun_activation": {
+    "subtitle": "sound.aperture_innovations.portal_gun_activation",
+    "sounds": [
+      "aperture_innovations:portal_gun_activation"
+    ]
+  },
+  "portal_gun_fire_primary": {
+    "subtitle": "sound.aperture_innovations.portal_gun_fire_primary",
+    "sounds": [
+      "aperture_innovations:portal_gun_fire_primary_1",
+      "aperture_innovations:portal_gun_fire_primary_2",
+      "aperture_innovations:portal_gun_fire_primary_3"
+    ]
+  },
+  "portal_gun_fire_secondary": {
+    "subtitle": "sound.aperture_innovations.portal_gun_fire_secondary",
+    "sounds": [
+      "aperture_innovations:portal_gun_fire_secondary_1",
+      "aperture_innovations:portal_gun_fire_secondary_2",
+      "aperture_innovations:portal_gun_fire_secondary_3"
+    ]
+  },
+  "portal_invalid_surface": {
+    "subtitle": "sound.aperture_innovations.portal_invalid_surface",
+    "sounds": [
+      "aperture_innovations:portal_invalid_surface_1",
+      "aperture_innovations:portal_invalid_surface_2",
+      "aperture_innovations:portal_invalid_surface_3",
+      "aperture_innovations:portal_invalid_surface_4"
+    ]
+  },
+  "portal_open_primary": {
+    "subtitle": "sound.aperture_innovations.portal_open_primary",
+    "sounds": [
+      "aperture_innovations:portal_open_primary_1"
+    ]
+  },
+  "portal_open_secondary": {
+    "subtitle": "sound.aperture_innovations.portal_open_secondary",
+    "sounds": [
+      "aperture_innovations:portal_open_secondary_1",
+      "aperture_innovations:portal_open_secondary_2"
+    ]
+  },
+  "portal_gun_reset": {
+    "subtitle": "sound.aperture_innovations.portal_gun_reset",
+    "sounds": [
+      "aperture_innovations:portal_gun_reset"
+    ]
+  },
+  "long_fall_boots_land": {
+    "subtitle": "sound.aperture_innovations.long_fall_boots_land",
+    "sounds": [
+      "aperture_innovations:longfall_boots_land_1",
+      "aperture_innovations:longfall_boots_land_2",
+      "aperture_innovations:longfall_boots_land_3"
+    ]
+  },
+  "cube_impact": {
+    "subtitle": "sound.aperture_innovations.cube_impact",
+    "sounds": [
+      "aperture_innovations:cube_impact_1",
+      "aperture_innovations:cube_impact_2",
+      "aperture_innovations:cube_impact_3",
+      "aperture_innovations:cube_impact_4",
+      "aperture_innovations:cube_impact_5"
+    ]
+  },
+  "pedestal_button_down": {
+    "subtitle": "sound.aperture_innovations.pedestal_button_down",
+    "sounds": [
+      "aperture_innovations:pedestal_button_down"
+    ]
+  },
+  "pedestal_button_up": {
+    "subtitle": "sound.aperture_innovations.pedestal_button_up",
+    "sounds": [
+      "aperture_innovations:pedestal_button_up"
+    ]
+  },
+  "large_button_down": {
+    "subtitle": "sound.aperture_innovations.large_button_down",
+    "sounds": [
+      "aperture_innovations:large_button_down"
+    ]
+  },
+  "large_button_up": {
+    "subtitle": "sound.aperture_innovations.large_button_up",
+    "sounds": [
+      "aperture_innovations:large_button_up"
+    ]
+  },
+  "timer_tick": {
+    "subtitle": "sound.aperture_innovations.timer_tick",
+    "sounds": [
+      "aperture_innovations:synth_tick_tock_01"
+    ]
+  },
+  "portal_gun_hold_start": {
+    "subtitle": "sound.aperture_innovations.portal_gun_hold_start",
+    "sounds": [
+      "aperture_innovations:portal_gun_hold_start"
+    ]
+  },
+  "portal_gun_hold_fail": {
+    "subtitle": "sound.aperture_innovations.portal_gun_hold_fail",
+    "sounds": [
+      "aperture_innovations:portal_gun_hold_fail"
+    ]
+  },
+  "portal_gun_hold_loop": {
+    "subtitle": "sound.aperture_innovations.portal_gun_hold_loop",
+    "sounds": [
+      "aperture_innovations:portal_gun_hold_loop"
+    ]
+  },
+  "portal_gun_hold_stop": {
+    "subtitle": "sound.aperture_innovations.portal_gun_hold_stop",
+    "sounds": [
+      "aperture_innovations:portal_gun_hold_stop"
+    ]
+  },
+  "turret_wife_serenade": {
+    "category": "record",
+    "sounds": [
+      {
+        "name": "aperture_innovations:records/turret_wife_serenade",
+        "stream": true
+      }
+    ]
+  },
+  "turret_different_intro": {
+    "sounds": [
+      {
+        "name": "aperture_innovations:turret/different_intro"
+      }
+    ]
+  },
+  "turret_different_death": {
+    "sounds": [
+      {
+        "name": "aperture_innovations:turret/different_death"
+      }
+    ]
+  },
+  "turret_different_chatter": {
+    "sounds": [
+      {
+        "name": "aperture_innovations:turret/different_turret1"
+      },
+      {
+        "name": "aperture_innovations:turret/different_turret2"
+      },
+      {
+        "name": "aperture_innovations:turret/different_turret3"
+      },
+      {
+        "name": "aperture_innovations:turret/different_turret4"
+      },
+      {
+        "name": "aperture_innovations:turret/different_turret5"
+      },
+      {
+        "name": "aperture_innovations:turret/different_turret6"
+      },
+      {
+        "name": "aperture_innovations:turret/different_turret7"
+      },
+      {
+        "name": "aperture_innovations:turret/different_turret8"
+      },
+      {
+        "name": "aperture_innovations:turret/different_turret9"
+      },
+      {
+        "name": "aperture_innovations:turret/different_turret10"
+      },
+      {
+        "name": "aperture_innovations:turret/different_turret11"
+      }
+    ]
+  }
+}

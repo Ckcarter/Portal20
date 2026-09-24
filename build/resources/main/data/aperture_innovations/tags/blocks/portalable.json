@@ -1,0 +1,26 @@
+{
+  "values":
+  [
+    "aperture_innovations:concrete_surface_block",
+    "aperture_innovations:concrete_surface_tile_block",
+    "aperture_innovations:concrete_surface_1x2_block",
+    "minecraft:diorite",
+    "minecraft:white_terracotta",
+    "minecraft:white_concrete",
+    "minecraft:quartz_block",
+    "minecraft:quartz_stairs",
+    "minecraft:quartz_slab",
+    "minecraft:chiseled_quartz_block",
+    "minecraft:quartz_pillar",
+    "minecraft:quartz_bricks",
+    "minecraft:smooth_quartz",
+    "minecraft:smooth_quartz_stairs",
+    "minecraft:smooth_quartz_slab",
+    "minecraft:iron_block",
+    "minecraft:calcite",
+    "minecraft:end_stone",
+    "minecraft:end_stone_bricks",
+    "minecraft:end_stone_brick_stairs",
+    "minecraft:end_stone_brick_slab"
+  ]
+}

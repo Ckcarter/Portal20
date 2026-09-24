@@ -1,0 +1,1 @@
+net/mistersecret312/aperture_innovations/mixin/CollisionMixin getBlockCollisions (Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/phys/AABB;)Ljava/lang/Iterable; m_186434_

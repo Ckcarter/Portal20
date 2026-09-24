@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " P ",
+    "PCP",
+    " P "
+  ],
+  "key": {
+    "P": {
+      "item": "minecraft:pink_dye"
+    },
+    "C": {
+      "item": "aperture_innovations:weighted_storage_cube"
+    }
+  },
+  "result": {
+    "item": "aperture_innovations:weighted_companion_cube"
+  }
+}

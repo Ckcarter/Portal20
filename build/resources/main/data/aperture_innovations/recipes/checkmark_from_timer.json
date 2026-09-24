@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "redstone",
+  "ingredients": [
+    {
+      "item": "aperture_innovations:antline_timer"
+    }
+  ],
+  "result": {
+    "item": "aperture_innovations:antline_checkmark"
+  }
+}

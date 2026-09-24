@@ -1,0 +1,61 @@
+{
+  "texture": "aperture_innovations:textures/item/portal_gun.png",
+
+  "idle_core_texture": "aperture_innovations:textures/item/idle_core.png",
+  "crosshair_texture": "aperture_innovations:textures/gui/atlas/atlas_crosshair.png",
+
+  "generic_portal":
+  {
+    "closed_texture": "aperture_innovations:textures/block/portal/generic/portal_closed.png",
+    "highlight_texture": "aperture_innovations:textures/block/portal/generic/portal_highlight.png",
+    "vortex_texture": "aperture_innovations:block/portal/generic/portal_vortex",
+    "core_texture": "aperture_innovations:textures/block/portal/generic/gun_core.png",
+    "crosshair_texture": "aperture_innovations:textures/gui/generic_crosshair.png"
+  },
+
+  "secondary_portal":
+  {
+    "closed_texture": "aperture_innovations:textures/block/portal/atlas/portal_dark_blue_closed.png",
+    "highlight_texture": "aperture_innovations:textures/block/portal/atlas/portal_highlight_dark_blue.png",
+    "vortex_texture": "aperture_innovations:block/portal/atlas/portal_dark_blue_vortex",
+    "core_texture": "aperture_innovations:textures/item/atlas/atlas_dark_blue_core.png",
+
+    "portal_mask_texture": "aperture_innovations:textures/block/portal/portal_mask.png",
+
+    "color": { "red": 1.0, "green": 1.0, "blue": 1.0, "alpha": 1.0 },
+    "generic_coloring": true,
+
+    "opening_sound": "aperture_innovations:portal_open_secondary",
+    "shot_sound": "aperture_innovations:portal_gun_fire_secondary",
+    "enter_sound": "aperture_innovations:portal_enter",
+    "ambient_sound": "aperture_innovations:portal_ambient",
+    "invalid_surface_sound": "aperture_innovations:portal_invalid_surface",
+    "fizzle_sound": "aperture_innovations:portal_fizzle"
+  },
+
+  "primary_portal":
+  {
+    "closed_texture": "aperture_innovations:textures/block/portal/atlas/portal_light_blue_closed.png",
+    "highlight_texture": "aperture_innovations:textures/block/portal/atlas/portal_highlight_light_blue.png",
+    "vortex_texture": "aperture_innovations:block/portal/atlas/portal_light_blue_vortex",
+    "core_texture": "aperture_innovations:textures/item/atlas/atlas_light_blue_core.png",
+
+    "portal_mask_texture": "aperture_innovations:textures/block/portal/portal_mask.png",
+
+    "color": { "red": 1.0, "green": 1.0, "blue": 1.0, "alpha": 1.0 },
+    "generic_coloring": true,
+
+    "opening_sound": "aperture_innovations:portal_open_primary",
+    "shot_sound": "aperture_innovations:portal_gun_fire_primary",
+    "enter_sound": "aperture_innovations:portal_enter",
+    "ambient_sound": "aperture_innovations:portal_ambient",
+    "invalid_surface_sound": "aperture_innovations:portal_invalid_surface",
+    "fizzle_sound": "aperture_innovations:portal_fizzle"
+  },
+
+  "primary_stripe_color": { "red": 0.0, "green": 0.0, "blue": 1.0, "alpha": 1.0 },
+  "secondary_stripe_color": { "red": 0.0, "green": 0.0, "blue": 1.0, "alpha": 1.0 },
+
+  "activation_sound": "aperture_innovations:portal_gun_activation",
+  "reset_sound": "aperture_innovations:portal_gun_reset"
+}

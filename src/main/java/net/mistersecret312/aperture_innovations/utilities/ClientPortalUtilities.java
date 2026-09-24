@@ -1,0 +1,182 @@
+package net.mistersecret312.aperture_innovations.utilities;
+
+import com.mojang.datafixers.util.Pair;
+import net.minecraft.resources.ResourceLocation;
+import net.mistersecret312.aperture_innovations.client.ColorUtil;
+import net.mistersecret312.aperture_innovations.client.resourcepack.ClientPortalGunVariant;
+import net.mistersecret312.aperture_innovations.data.portal.ClientPortalLink;
+import net.mistersecret312.aperture_innovations.sounds.GunSoundWrapper;
+import net.mistersecret312.aperture_innovations.sounds.PortalSoundWrapper;
+
+import java.awt.*;
+import java.util.HashMap;
+import java.util.UUID;
+
+public class ClientPortalUtilities
+{
+	public static HashMap<UUID, Pair<PortalSoundWrapper.PortalAmbient, PortalSoundWrapper.PortalAmbient>> AMBIENTS = new HashMap<>();
+	public static HashMap<UUID, GunSoundWrapper.ZapSound> PLAYERS = new HashMap<>();
+
+	public static HashMap<UUID, Pair<Float, Float>> OPENING_ANIMATIONS = new HashMap<>();
+
+	public static ColorUtil.RGBA getPortalColor(ClientPortalLink link, boolean isPrimary)
+	{
+		ClientPortalGunVariant variant = link.getVariant();
+		int gunColor = isPrimary ? link.getPrimaryPortal().getColor() : link.getSecondaryPortal().getColor();
+		ColorUtil.RGBA variantColor = isPrimary ? variant.getPrimaryPortal().getColor() : variant.getSecondaryPortal().getColor();
+		if(gunColor == -1)
+			return variantColor;
+		else
+		{
+			Color rgbaColor = new Color(gunColor, false);
+			return new ColorUtil.RGBA(rgbaColor.getRed()/255f, rgbaColor.getGreen()/255f, rgbaColor.getBlue()/255f, 1F);
+		}
+	}
+
+	public static ResourceLocation getCrosshairTexture(ClientPortalLink link, boolean isPrimary)
+	{
+		ClientPortalGunVariant variant = link.getVariant();
+		int gunColor = isPrimary ? link.getPrimaryPortal().getColor() : link.getSecondaryPortal().getColor();
+		if(gunColor == -1)
+			return variant.getCrosshairTexture();
+		else
+		{
+			return isPrimary
+						   ? variant.getPrimaryPortal().isGenericColoring()
+									 ? variant.getGenericPortal().getCrosshairTexture() :
+									 variant.getCrosshairTexture()
+						   : variant.getSecondaryPortal().isGenericColoring() ?
+									 variant.getGenericPortal().getCrosshairTexture() :
+									 variant.getCrosshairTexture();
+		}
+	}
+
+	public static ResourceLocation getPortalHighlightTexture(ClientPortalLink link, boolean isPrimary)
+	{
+		ClientPortalGunVariant variant = link.getVariant();
+		int gunColor = isPrimary ? link.getPrimaryPortal().getColor() : link.getSecondaryPortal().getColor();
+		if(gunColor == -1)
+			return isPrimary ? variant.getPrimaryPortal().getHighlightTexture() : variant.getSecondaryPortal().getHighlightTexture();
+		else
+		{
+			return isPrimary ? variant.getPrimaryPortal().isGenericColoring() ?
+									   variant.getGenericPortal().getHighlightTexture() :
+									   variant.getPrimaryPortal().getHighlightTexture()
+						   : variant.getSecondaryPortal().isGenericColoring() ?
+									 variant.getGenericPortal().getHighlightTexture() :
+									 variant.getSecondaryPortal().getHighlightTexture();
+		}
+
+	}
+
+	public static ResourceLocation getPortalGunCoreTexture(ClientPortalLink link, int lastPortal)
+	{
+		ClientPortalGunVariant variant = link.getVariant();
+
+		ResourceLocation genericCore = variant.getGenericPortal().getCoreTexture();
+		ResourceLocation idleCore = variant.getIdleCoreTexture();
+		ResourceLocation primaryCore = variant.getPrimaryPortal().getCoreTexture();
+		ResourceLocation secondaryCore = variant.getSecondaryPortal().getCoreTexture();
+
+		if(lastPortal == -1)
+			return idleCore;
+		boolean isPrimary = lastPortal == 0;
+
+		int gunColor = isPrimary ? link.getPrimaryPortal().getColor() : link.getSecondaryPortal().getColor();
+		if(gunColor == -1)
+			return isPrimary ? primaryCore : secondaryCore;
+		else
+		{
+			return isPrimary ? variant.getPrimaryPortal().isGenericColoring() ?
+									   genericCore : primaryCore
+						     : variant.getSecondaryPortal().isGenericColoring() ?
+									   genericCore : secondaryCore;
+		}
+	}
+
+	public static ResourceLocation getPortalGunTexture(ClientPortalLink link)
+	{
+		ClientPortalGunVariant variant = link.getVariant();
+		return variant.getTexture();
+	}
+
+	public static ResourceLocation getPortalClosedTexture(ClientPortalLink link, boolean isPrimary)
+	{
+		ClientPortalGunVariant variant = link.getVariant();
+		int gunColor = isPrimary ? link.getPrimaryPortal().getColor() : link.getSecondaryPortal().getColor();
+		if(gunColor == -1)
+			return isPrimary ? variant.getPrimaryPortal().getClosedTexture() : variant.getSecondaryPortal().getClosedTexture();
+		else
+		{
+			return isPrimary ? variant.getPrimaryPortal().isGenericColoring() ?
+									   variant.getGenericPortal().getClosedTexture() :
+									   variant.getPrimaryPortal().getClosedTexture()
+						   : variant.getSecondaryPortal().isGenericColoring() ?
+									 variant.getGenericPortal().getClosedTexture() :
+									 variant.getSecondaryPortal().getClosedTexture();
+		}
+	}
+
+	public static ResourceLocation getPortalVortexTexture(ClientPortalLink link, boolean isPrimary)
+	{
+		ClientPortalGunVariant variant = link.getVariant();
+		int gunColor = isPrimary ? link.getPrimaryPortal().getColor() : link.getSecondaryPortal().getColor();
+		if(gunColor == -1)
+			return isPrimary ? variant.getPrimaryPortal().getVortexTexture() : variant.getSecondaryPortal().getVortexTexture();
+		else
+		{
+			return isPrimary ? variant.getPrimaryPortal().isGenericColoring() ?
+									   variant.getGenericPortal().getVortexTexture() :
+									   variant.getPrimaryPortal().getVortexTexture()
+						   : variant.getSecondaryPortal().isGenericColoring() ?
+									 variant.getGenericPortal().getVortexTexture() :
+									 variant.getSecondaryPortal().getVortexTexture();
+		}
+	}
+
+	public static PortalSoundWrapper.PortalAmbient getAmbientSound(UUID uuid, boolean isPrimary)
+	{
+		Pair<PortalSoundWrapper.PortalAmbient, PortalSoundWrapper.PortalAmbient> pair = AMBIENTS.getOrDefault(uuid, new Pair<>(null, null));
+		if(isPrimary)
+			return pair.getFirst();
+		else return pair.getSecond();
+	}
+
+	public static void setAmbientSound(PortalSoundWrapper.PortalAmbient ambient, UUID uuid, boolean isPrimary)
+	{
+		Pair<PortalSoundWrapper.PortalAmbient, PortalSoundWrapper.PortalAmbient> pair = AMBIENTS.getOrDefault(uuid, new Pair<>(null, null));
+		if(isPrimary)
+			pair = new Pair<>(ambient, pair.getSecond());
+		else pair = new Pair<>(pair.getFirst(), ambient);
+
+		AMBIENTS.put(uuid, pair);
+	}
+
+	public static GunSoundWrapper.ZapSound getPlayerZapSound(UUID uuid)
+	{
+		return PLAYERS.getOrDefault(uuid, null);
+	}
+
+	public static void setPlayerZapSound(GunSoundWrapper.ZapSound ambient, UUID uuid)
+	{
+		PLAYERS.put(uuid, ambient);
+	}
+
+	public static float getPortalOpeningAnimationProgress(UUID uuid, boolean isPrimary)
+	{
+		Pair<Float, Float> pair = OPENING_ANIMATIONS.getOrDefault(uuid, new Pair<>(0F, 0F));
+		if(isPrimary)
+			return pair.getFirst();
+		else return pair.getSecond();
+	}
+
+	public static void setPortalOpeningAnimationProgress(float progress, UUID uuid, boolean isPrimary)
+	{
+		Pair<Float, Float> pair = OPENING_ANIMATIONS.getOrDefault(uuid, new Pair<>(0F, 0F));
+		if(isPrimary)
+			pair = new Pair<>(progress, pair.getSecond());
+		else pair = new Pair<>(pair.getFirst(), progress);
+
+		OPENING_ANIMATIONS.put(uuid, pair);
+	}
+}

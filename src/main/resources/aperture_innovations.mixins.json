@@ -1,0 +1,21 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "net.mistersecret312.aperture_innovations.mixin",
+  "refmap": "aperture_innovations.refmap.json",
+  "compatibilityLevel": "JAVA_17",
+  "mixins": [
+    "CollisionMixin",
+    "EntityMixin",
+    "LivingEntityMixin"
+  ],
+  "client": [
+    "LocalPlayerMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "overwrites": {
+    "requireAnnotations": true
+  }
+}

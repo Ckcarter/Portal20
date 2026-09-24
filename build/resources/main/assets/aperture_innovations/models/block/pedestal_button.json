@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/cube_all",
+  "textures": {
+    "particle": "aperture_innovations:block/pedestal_button/pedestal_button"
+  }
+}
