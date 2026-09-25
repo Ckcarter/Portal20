@@ -50,12 +50,13 @@ public class SentryTurretRenderer
         if (entity.isAlive() && !entity.isFallen()) {
             Vec3 dir = entity.getWeaponForwardVector().normalize();
             Vec3 start = new Vec3(0.0D, 1.02D, 0.0D).add(dir.scale(0.45D));
-            Vec3 worldStart = entity.position().add(start).add(0.0D, -0.0625D, 0.0D);
-            // PortalGun 1.7.10-style laser: the beam is driven by the turret's
-            // actual weapon yaw/pitch. Because the gun tracks the target, the laser
-            // naturally follows the same aim instead of being independently snapped
-            // to target.getEyePosition().
-            Vec3 worldEnd = worldStart.add(dir.scale(24.0D));
+            Vec3 worldStart = entity.position().add(start);
+            // Keep the red laser on at all times. When the turret has a legal
+            // front target, the beam follows that target. Otherwise it points forward.
+            net.minecraft.world.entity.LivingEntity target = entity.getTarget();
+            Vec3 worldEnd = entity.canAimLaserAt(target)
+                    ? target.getEyePosition(partialTick)
+                    : worldStart.add(dir.scale(24.0D));
 
             net.minecraft.world.phys.HitResult hit = entity.level().clip(
                     new net.minecraft.world.level.ClipContext(

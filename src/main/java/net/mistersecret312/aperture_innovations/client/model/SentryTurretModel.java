@@ -114,10 +114,9 @@ public class SentryTurretModel extends EntityModel<SentryTurretEntity> {
   root.addOrReplaceChild("barrelBottomL",CubeListBuilder.create().texOffs(19,14).addBox(1.650000F,0.300000F,-1.800000F,1.000000F,1.000000F,1.000000F,new CubeDeformation(0.000000F)),PartPose.offsetAndRotation(1.500000F,10.500000F,-2.000000F,0.000000F,0.000000F,0.000000F));
   return LayerDefinition.create(mesh,64,32); }
  @Override public void setupAnim(SentryTurretEntity e,float ls,float la,float age,float yaw,float pitch){
-  // PortalGun 1.7.10 ModelTurret: interpolate prev/current retraction each render frame.
-  // This is what makes the 0..10 one-tick mechanical deployment look smooth.
-  float partial=age-(float)Math.floor(age);
-  float retract=(e.getInterpolatedRetraction(partial)*0.28F)-1.3F;
+  // Exact PortalGun 1.7.10 ModelTurret deployment formula:
+  // retraction 0 -> -1.3, retraction 10 -> +1.5.
+  float retract=(e.getRetraction()*0.28F)-1.3F;
 
   sideR.x=-retract;
   sideGunR.x=-retract;

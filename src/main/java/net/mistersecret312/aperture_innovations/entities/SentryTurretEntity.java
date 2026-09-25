@@ -40,7 +40,6 @@ private static final EntityDataAccessor<Boolean> OPEN = SynchedEntityData.define
     private static final EntityDataAccessor<Boolean> DIFFERENT = SynchedEntityData.defineId(SentryTurretEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Boolean> SINGING = SynchedEntityData.defineId(SentryTurretEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Integer> RETRACTION = SynchedEntityData.defineId(SentryTurretEntity.class, EntityDataSerializers.INT);
-    private static final EntityDataAccessor<Integer> PREV_RETRACTION = SynchedEntityData.defineId(SentryTurretEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Float> AIM_YAW = SynchedEntityData.defineId(SentryTurretEntity.class, EntityDataSerializers.FLOAT);
     private static final EntityDataAccessor<Float> AIM_PITCH = SynchedEntityData.defineId(SentryTurretEntity.class, EntityDataSerializers.FLOAT);
     private boolean fireFromLeft = true;
@@ -88,7 +87,6 @@ private static final EntityDataAccessor<Boolean> OPEN = SynchedEntityData.define
         entityData.define(DIFFERENT, false);
         entityData.define(SINGING, false);
         entityData.define(RETRACTION, 0);
-        entityData.define(PREV_RETRACTION, 0);
         entityData.define(AIM_YAW, 0.0F);
         entityData.define(AIM_PITCH, 0.0F);
     }
@@ -124,9 +122,10 @@ private static final EntityDataAccessor<Boolean> OPEN = SynchedEntityData.define
             // Keep the turret anchored, but allow its visible body to face the
             // target while it is actively tracking/firing. When idle it returns
             // to the original placement direction.
-            // Original 1.7.10 behavior: render/body yaw is the fixed placement yaw.
-            // The moving gun assembly aims independently. Do NOT rotate the whole turret.
-            float bodyYaw = homeYaw;
+            float bodyYaw = (combatActivated && getTarget() != null && getTarget().isAlive())
+                    ? turretAimYaw
+                    : homeYaw;
+
             setYRot(bodyYaw);
             yRotO = bodyYaw;
             setYHeadRot(bodyYaw);
@@ -219,11 +218,11 @@ private static final EntityDataAccessor<Boolean> OPEN = SynchedEntityData.define
                 && isInDetectionCone(target);
 
         prevRetraction = getRetraction();
-        entityData.set(PREV_RETRACTION, prevRetraction);
 
         if (validTarget && !isDefective()) {
             combatActivated = true;
             hasTarget = true;
+            searchTimer = 0;
             lostTargetTicks = 0;
             searchTimer = 0;
 
@@ -248,36 +247,41 @@ private static final EntityDataAccessor<Boolean> OPEN = SynchedEntityData.define
                 }
             }
         } else {
-            // Shooting is finished (target dead, gone, out of range, or LOS lost).
-            // Close immediately instead of staying open for the old search sweep.
-            if (target != null) {
-                setTarget(null);
-            }
-
+            // PortalGun 1.7.10: after losing a target, search before retiring.
+            if (target != null) setTarget(null);
             hasTarget = false;
-            hasAttacked = false;
-            searchTimer = 0;
             fireTime = 0;
-            setOpen(false);
 
-            // Visibly retract the side gun assemblies back to the closed state.
-            if (getRetraction() > 0) {
-                setRetraction(Math.max(0, getRetraction() - 1));
-            }
+            if (hasAttacked && searchTimer <= 0) beginSearch();
 
-            // Bring the turret's aim back home while it closes.
-            turretAimYaw = Mth.rotLerp(0.35F, turretAimYaw, homeYaw);
-            turretAimPitch = Mth.rotLerp(0.35F, turretAimPitch, 0.0F);
-            entityData.set(AIM_YAW, turretAimYaw);
-            entityData.set(AIM_PITCH, turretAimPitch);
-
-            if (getRetraction() == 0) {
-                combatActivated = false;
-                lostTargetTicks = 0;
-                turretAimYaw = homeYaw;
-                turretAimPitch = 0.0F;
+            if (searchTimer > 0 && getRetraction() > 0) {
+                setOpen(true);
+                updateSearchSweep();
+                searchTimer--;
+                if (searchTimer == 19) searchTimer = 9;
+                if (searchTimer <= 1) {
+                    searchTimer = 0;
+                    hasAttacked = false;
+                    setOpen(false);
+                }
+            } else {
+                setOpen(false);
+                if (getRetraction() > 0) {
+                    setRetraction(Math.max(0, getRetraction() - 1));
+                }
+                turretAimYaw = Mth.rotLerp(0.35F, turretAimYaw, homeYaw);
+                turretAimPitch = Mth.rotLerp(0.35F, turretAimPitch, 0.0F);
                 entityData.set(AIM_YAW, turretAimYaw);
                 entityData.set(AIM_PITCH, turretAimPitch);
+                if (getRetraction() == 0) {
+                    combatActivated = false;
+                    lostTargetTicks = 0;
+                    hasAttacked = false;
+                    turretAimYaw = homeYaw;
+                    turretAimPitch = 0.0F;
+                    entityData.set(AIM_YAW, turretAimYaw);
+                    entityData.set(AIM_PITCH, turretAimPitch);
+                }
             }
         }
 
@@ -340,16 +344,10 @@ public float getTurretAimYaw() { return entityData.get(AIM_YAW); }
         if (entity instanceof SentryTurretEntity) return false;
         if (entity instanceof Player player && (player.isCreative() || player.isSpectator())) return false;
         if (!(entity instanceof Player) && !(entity instanceof Mob)) return false;
-
-        // User-requested modern override: activation/combat area is 2 blocks.
-        if (distanceToSqr(entity) > 4.0D) return false;
-
         return hasLineOfSight(entity);
     }
 
     private LivingEntity findClassicTarget() {
-        // Original turret logic periodically scans rather than allowing vanilla
-        // target goals to constantly rewrite the target.
         java.util.List<LivingEntity> candidates = level().getEntitiesOfClass(
                 LivingEntity.class,
                 getBoundingBox().inflate(2.0D),
@@ -358,8 +356,6 @@ public float getTurretAimYaw() { return entityData.get(AIM_YAW); }
         LivingEntity best = null;
         double bestDistance = Double.MAX_VALUE;
         for (LivingEntity candidate : candidates) {
-            // A dormant turret only notices entities crossing its forward path.
-            if (!isInDetectionCone(candidate)) continue;
             double distance = distanceToSqr(candidate);
             if (distance < bestDistance) {
                 bestDistance = distance;
@@ -371,17 +367,11 @@ public float getTurretAimYaw() { return entityData.get(AIM_YAW); }
 
     private boolean isInDetectionCone(LivingEntity target) {
         if (target == null) return false;
-
-        Vec3 eye = new Vec3(getX(), getEyeY(), getZ());
-        Vec3 toTarget = target.getEyePosition().subtract(eye);
-        if (toTarget.lengthSqr() < 1.0E-6D) return true;
-
-        Vec3 homeForward = Vec3.directionFromRotation(0.0F, homeYaw + 180.0F).normalize();
-        double dot = Mth.clamp(homeForward.dot(toTarget.normalize()), -1.0D, 1.0D);
-        double angle = Math.acos(dot);
-
-        // Exact normal PortalGun 1.7.10 view threshold: 0.942477796... radians (54 degrees).
-        return angle < 0.9424777960769379D && hasLineOfSight(target);
+        double dx = target.getX() - getX();
+        double dz = target.getZ() - getZ();
+        if ((dx * dx + dz * dz) < 0.0001D) return true;
+        float targetYaw = (float)(Mth.atan2(dz, dx) * (180.0D / Math.PI)) + 90.0F;
+        return Math.abs(Mth.wrapDegrees(targetYaw - homeYaw)) <= 40.0F;
     }
 
     public boolean canAimLaserAt(LivingEntity target) {
@@ -412,40 +402,31 @@ public float getTurretAimYaw() { return entityData.get(AIM_YAW); }
     }
 
     private boolean isTargetInFrontForFiring(LivingEntity target) {
-        if (target == null || !isClassicValidTarget(target) || !isInDetectionCone(target)) return false;
-
-        double dx = target.getX() - getX();
-        double dz = target.getZ() - getZ();
-        float targetYaw = (float)(Mth.atan2(dz, dx) * (180.0D / Math.PI)) + 90.0F;
-        if (Math.abs(Mth.wrapDegrees(targetYaw - homeYaw)) > 40.0F) return false;
-
+        if (target == null || !isInDetectionCone(target)) return false;
         Vec3 muzzle = new Vec3(getX(), getY() + 1.02D, getZ());
         Vec3 toTarget = target.getEyePosition().subtract(muzzle).normalize();
-        return getWeaponForwardVector().normalize().dot(toTarget) > 0.94D
-                && hasLineOfSight(target);
+        Vec3 weaponForward = getWeaponForwardVector().normalize();
+
+        // First gate: fixed front side. Second gate: gun is actually aimed at target.
+        return weaponForward.dot(toTarget) > 0.94D && hasLineOfSight(target);
     }
 
     private void faceTarget(LivingEntity target) {
         if (target == null) return;
-
         double dx = target.getX() - getX();
         double dz = target.getZ() - getZ();
-        double dy = target.getEyeY() - (getY() + getEyeHeight());
+        double dy = target.getEyeY() - (getY() + 1.05D);
         double horizontal = Math.sqrt(dx * dx + dz * dz);
 
         float wantedYaw = (float)(Mth.atan2(dz, dx) * (180.0D / Math.PI)) + 90.0F;
         float wantedPitch = (float)(-(Mth.atan2(dy, horizontal) * (180.0D / Math.PI)));
 
-        // PortalGun 1.7.10 EntityTurret clamps rotation to 40 degrees either
-        // side of renderYawOffset and pitch to +/-50 degrees.
-        float yawFromHome = Mth.wrapDegrees(wantedYaw - homeYaw);
-        float limitedYaw = homeYaw + Mth.clamp(yawFromHome, -40.0F, 40.0F);
+        float relativeYaw = Mth.wrapDegrees(wantedYaw - homeYaw);
+        float limitedYaw = homeYaw + Mth.clamp(relativeYaw, -40.0F, 40.0F);
         float limitedPitch = Mth.clamp(wantedPitch, -50.0F, 50.0F);
 
-        // Original faceEntity used 10 degrees/tick maximum rotation.
         turretAimYaw = Mth.rotateIfNecessary(turretAimYaw, limitedYaw, 10.0F);
         turretAimPitch = Mth.rotateIfNecessary(turretAimPitch, limitedPitch, 10.0F);
-
         entityData.set(AIM_YAW, turretAimYaw);
         entityData.set(AIM_PITCH, turretAimPitch);
     }
@@ -472,6 +453,11 @@ public float getTurretAimYaw() { return entityData.get(AIM_YAW); }
         turretAimPitch = Mth.rotLerp(0.50F, turretAimPitch, pitch);
         entityData.set(AIM_YAW, turretAimYaw);
         entityData.set(AIM_PITCH, turretAimPitch);
+
+        setYRot(turretAimYaw);
+        setYHeadRot(turretAimYaw);
+        yBodyRot = turretAimYaw;
+        yBodyRotO = turretAimYaw;
     }
 
     @Override
@@ -597,12 +583,6 @@ public float getTurretAimYaw() { return entityData.get(AIM_YAW); }
     public boolean isDefective() { return entityData.get(DEFECTIVE); }
     public void setDefective(boolean value) { entityData.set(DEFECTIVE, value); }
     public int getRetraction() { return entityData.get(RETRACTION); }
-    public int getPrevRetraction() { return entityData.get(PREV_RETRACTION); }
-    public float getInterpolatedRetraction(float partialTick) {
-        float prev = getPrevRetraction();
-        float current = getRetraction();
-        return prev + (current - prev) * Mth.clamp(partialTick, 0.0F, 1.0F);
-    }
     public void setRetraction(int value) { entityData.set(RETRACTION, Mth.clamp(value, 0, 10)); }
     public boolean isSearching() { return searchTimer > 0; }
 
@@ -638,9 +618,6 @@ public float getTurretAimYaw() { return entityData.get(AIM_YAW); }
         }
         setSinging(tag.getBoolean("TurretSinging"));
         setRetraction(tag.getInt("TurretRetraction"));
-        entityData.set(PREV_RETRACTION, getRetraction());
-        prevRetraction = getRetraction();
-        if (tag.contains("TurretHomeYaw")) homeYaw = tag.getFloat("TurretHomeYaw");
         homeYaw = tag.getFloat("TurretHomeYaw");
     }
 }
