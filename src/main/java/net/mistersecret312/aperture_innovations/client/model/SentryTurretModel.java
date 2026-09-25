@@ -114,28 +114,42 @@ public class SentryTurretModel extends EntityModel<SentryTurretEntity> {
   root.addOrReplaceChild("barrelBottomL",CubeListBuilder.create().texOffs(19,14).addBox(1.650000F,0.300000F,-1.800000F,1.000000F,1.000000F,1.000000F,new CubeDeformation(0.000000F)),PartPose.offsetAndRotation(1.500000F,10.500000F,-2.000000F,0.000000F,0.000000F,0.000000F));
   return LayerDefinition.create(mesh,64,32); }
  @Override public void setupAnim(SentryTurretEntity e,float ls,float la,float age,float yaw,float pitch){
-  float retract=(e.getRetraction()/10.0F)*2.8F-1.3F;
+  // Exact PortalGun 1.7.10 ModelTurret deployment formula:
+  // retraction 0 -> -1.3, retraction 10 -> +1.5.
+  float retract=(e.getRetraction()*0.28F)-1.3F;
+
   sideR.x=-retract;
   sideGunR.x=-retract;
   barrelTopR.x=-retract;
   barrelBottomR.x=-retract;
   sideSupportR.x=-retract;
+
   sideL.x=retract;
   sideGunL.x=retract;
   barrelTopL.x=retract;
   barrelBottomL.x=retract;
   sideSupportL.x=retract;
-  if(retract<0.5F){sideSupportR.x=-0.5F;sideSupportL.x=0.5F;}
-  sideL.yRot=yaw*0.017453292F; sideL.xRot=pitch*0.017453292F;
-  sideR.yRot=yaw*0.017453292F; sideR.xRot=pitch*0.017453292F;
-  sideGunR.yRot=yaw*0.017453292F; sideGunR.xRot=pitch*0.017453292F;
-  sideGunL.yRot=yaw*0.017453292F; sideGunL.xRot=pitch*0.017453292F;
-  barrelTopR.yRot=yaw*0.017453292F; barrelTopR.xRot=pitch*0.017453292F;
-  barrelTopL.yRot=yaw*0.017453292F; barrelTopL.xRot=pitch*0.017453292F;
-  barrelBottomR.yRot=yaw*0.017453292F; barrelBottomR.xRot=pitch*0.017453292F;
-  barrelBottomL.yRot=yaw*0.017453292F; barrelBottomL.xRot=pitch*0.017453292F;
-  sideSupportL.yRot=yaw*0.017453292F; sideSupportL.xRot=pitch*0.017453292F;
-  sideSupportR.yRot=yaw*0.017453292F; sideSupportR.xRot=pitch*0.017453292F;
+
+  if(retract<0.5F){
+   sideSupportR.x=-0.5F;
+   sideSupportL.x=0.5F;
+  }
+
+  float aimYaw=e.getTurretAimYaw()-e.getYRot();
+  float aimPitch=e.getTurretAimPitch();
+  float yr=aimYaw*0.017453292F;
+  float xr=aimPitch*0.017453292F;
+
+  sideL.yRot=yr; sideL.xRot=xr;
+  sideR.yRot=yr; sideR.xRot=xr;
+  sideGunR.yRot=yr; sideGunR.xRot=xr;
+  sideGunL.yRot=yr; sideGunL.xRot=xr;
+  barrelTopR.yRot=yr; barrelTopR.xRot=xr;
+  barrelTopL.yRot=yr; barrelTopL.xRot=xr;
+  barrelBottomR.yRot=yr; barrelBottomR.xRot=xr;
+  barrelBottomL.yRot=yr; barrelBottomL.xRot=xr;
+  sideSupportL.yRot=yr; sideSupportL.xRot=xr;
+  sideSupportR.yRot=yr; sideSupportR.xRot=xr;
  }
  @Override public void renderToBuffer(PoseStack p,VertexConsumer v,int light,int overlay,float r,float g,float b,float a){root.render(p,v,light,overlay,r,g,b,a);}
 }

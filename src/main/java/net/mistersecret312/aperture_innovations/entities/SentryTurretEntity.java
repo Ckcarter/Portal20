@@ -1,5 +1,6 @@
 package net.mistersecret312.aperture_innovations.entities;
 
+
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -11,17 +12,12 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.ai.goal.FloatGoal;
-import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
-import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
-import net.minecraft.world.entity.ai.goal.RangedAttackGoal;
-import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
-import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.monster.RangedAttackMob;
 import net.minecraft.world.entity.player.Player;
@@ -30,24 +26,42 @@ import net.minecraft.world.phys.Vec3;
 import net.mistersecret312.aperture_innovations.init.SoundInit;
 import net.mistersecret312.aperture_innovations.init.EntityInit;
 
+
 /**
  * Forge 1.20.1 port of the classic PortalGun EntityTurret state machine.
  * The original 4.0.0 beta turret was used as the behavior reference: deployment/retraction,
  * target search sweep, alternating gun fire, bouncy/knock-over state and persistent turret data.
  */
 public class SentryTurretEntity extends Monster implements RangedAttackMob {
-    private static final EntityDataAccessor<Boolean> OPEN = SynchedEntityData.defineId(SentryTurretEntity.class, EntityDataSerializers.BOOLEAN);
+private static final EntityDataAccessor<Boolean> OPEN = SynchedEntityData.defineId(SentryTurretEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Boolean> FALLEN = SynchedEntityData.defineId(SentryTurretEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Boolean> BOUNCY = SynchedEntityData.defineId(SentryTurretEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Boolean> DEFECTIVE = SynchedEntityData.defineId(SentryTurretEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Boolean> DIFFERENT = SynchedEntityData.defineId(SentryTurretEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Boolean> SINGING = SynchedEntityData.defineId(SentryTurretEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Integer> RETRACTION = SynchedEntityData.defineId(SentryTurretEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Float> AIM_YAW = SynchedEntityData.defineId(SentryTurretEntity.class, EntityDataSerializers.FLOAT);
+    private static final EntityDataAccessor<Float> AIM_PITCH = SynchedEntityData.defineId(SentryTurretEntity.class, EntityDataSerializers.FLOAT);
     private boolean fireFromLeft = true;
     private int barrel = 1;
     private int searchTimer = 0;
     private int lostTargetTicks = 0;
+    private int targetScanTimer = 0;
+    private boolean combatActivated = false;
+    private float turretAimYaw = 0.0F;
+    private float turretAimPitch = 0.0F;
+    private double anchorX;
+    private double anchorY;
+    private double anchorZ;
+    private boolean anchorSet = false;
     private int fireTime = 0;
+    // Direct ports of the important 1.7.10 EntityTurret state values.
+    private int prevRetraction = 0;
+    private boolean hasTarget = false;
+    private boolean hasAttacked = false;
+    // Slow the physical door/pod animation without changing the original 0..10 state.
+    // One retraction step every 3 ticks = about 1.5 seconds fully closed -> fully open.
+    private int retractionStepTimer = 0;
     private float homeYaw;
     private int singTime = 0;
     private int singCheckTime = 0;
@@ -60,7 +74,7 @@ public class SentryTurretEntity extends Monster implements RangedAttackMob {
 
     public static AttributeSupplier.Builder createAttributes() {
         return Monster.createMonsterAttributes()
-                .add(Attributes.MAX_HEALTH, 20.0D)
+                .add(Attributes.MAX_HEALTH, 2.0D)
                 .add(Attributes.FOLLOW_RANGE, 24.0D)
                 .add(Attributes.MOVEMENT_SPEED, 0.0D)
                 .add(Attributes.KNOCKBACK_RESISTANCE, 0.35D);
@@ -76,30 +90,55 @@ public class SentryTurretEntity extends Monster implements RangedAttackMob {
         entityData.define(DIFFERENT, false);
         entityData.define(SINGING, false);
         entityData.define(RETRACTION, 0);
+        entityData.define(AIM_YAW, 0.0F);
+        entityData.define(AIM_PITCH, 0.0F);
     }
 
     @Override
     protected void registerGoals() {
-        goalSelector.addGoal(0, new FloatGoal(this));
-        goalSelector.addGoal(1, new RangedAttackGoal(this, 0.0D, 4, 24.0F));
-        goalSelector.addGoal(2, new LookAtPlayerGoal(this, Player.class, 24.0F));
-        goalSelector.addGoal(3, new RandomLookAroundGoal(this));
-        targetSelector.addGoal(1, new HurtByTargetGoal(this));
-        targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, 10, true, false,
-                entity -> entity instanceof Player player && !player.isCreative() && !player.isSpectator()));
-        targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, Mob.class, 10, true, false,
-                entity -> entity instanceof Mob && !(entity instanceof SentryTurretEntity)));
+        // Classic PortalGun turret behavior is driven by the turret's own state
+        // machine in tick(), not by Minecraft's RangedAttackGoal/targetSelector.
+        // Keeping vanilla combat goals out prevents them from fighting turret aim,
+        // deployment and search timing.
     }
 
     @Override
     public void tick() {
         super.tick();
 
+        // Turrets have one heart (2 health points), including turrets loaded
+        // from older saves that previously had a larger health pool.
+        if (!level().isClientSide && getHealth() > 2.0F) {
+            setHealth(2.0F);
+        }
+
         // Portal-style sentry turrets are stationary once placed. Keep all target,
         // search, deploy/retract and serenade logic, but never let AI/pathing move the entity.
         getNavigation().stop();
         setDeltaMovement(0.0D, 0.0D, 0.0D);
         hasImpulse = false;
+
+        // Keep the physical entity at its placement rotation. Target tracking is
+        // handled separately by turretAimYaw/turretAimPitch so vanilla mob rotation
+        // controllers cannot fight our renderer and cause placement jitter.
+        if (tickCount > 1) {
+            // Keep the turret anchored, but allow its visible body to face the
+            // target while it is actively tracking/firing. When idle it returns
+            // to the original placement direction.
+            float bodyYaw = (combatActivated && getTarget() != null && getTarget().isAlive())
+                    ? turretAimYaw
+                    : homeYaw;
+
+            setYRot(bodyYaw);
+            yRotO = bodyYaw;
+            setYHeadRot(bodyYaw);
+            yHeadRot = bodyYaw;
+            yHeadRotO = bodyYaw;
+            yBodyRot = bodyYaw;
+            yBodyRotO = bodyYaw;
+            setXRot(0.0F);
+            xRotO = 0.0F;
+        }
         if (tickCount == 1) {
             // About one normal turret in ten becomes the special "I'm Different" variant.
             // The dedicated Different Turret spawn egg still always creates one.
@@ -120,6 +159,14 @@ public class SentryTurretEntity extends Monster implements RangedAttackMob {
                 yHeadRotO = awayYaw;
             }
             homeYaw = getYRot();
+            turretAimYaw = homeYaw;
+            turretAimPitch = 0.0F;
+            entityData.set(AIM_YAW, turretAimYaw);
+            entityData.set(AIM_PITCH, turretAimPitch);
+            anchorX = getX();
+            anchorY = getY();
+            anchorZ = getZ();
+            anchorSet = true;
             if (!level().isClientSide && isDifferent()) {
                 level().playSound(null, blockPosition(), SoundInit.TURRET_DIFFERENT_INTRO.get(), SoundSource.HOSTILE, 0.7F, 1.0F);
             }
@@ -148,20 +195,103 @@ public class SentryTurretEntity extends Monster implements RangedAttackMob {
             return;
         }
 
+        // ---- PortalGun 1.7.10 EntityTurret state-machine port ----
+        // The old turret scans every 10 ticks. It does not use vanilla combat goals.
+        if (!level().isClientSide && --targetScanTimer <= 0) {
+            targetScanTimer = 10;
+            LivingEntity found = findClassicTarget();
+
+            if (found != null) {
+                setTarget(found);
+                hasTarget = true;
+                searchTimer = 0;
+            } else if (getTarget() != null) {
+                // Lost the target: stop shooting. The branch below now closes immediately.
+                setTarget(null);
+                hasTarget = false;
+                searchTimer = 0;
+            }
+        }
+
         LivingEntity target = getTarget();
-        boolean validTarget = target != null && target.isAlive() && distanceToSqr(target) <= 576.0D && hasLineOfSight(target);
+        // A turret may ONLY engage something in front of its weapon face.
+        // Do not let combatActivated bypass the front-cone test; that was allowing
+        // a previously acquired mob to walk behind the turret and remain a target.
+        boolean validTarget = isClassicValidTarget(target)
+                && isInDetectionCone(target);
+
+        prevRetraction = getRetraction();
 
         if (validTarget && !isDefective()) {
+            combatActivated = true;
+            hasTarget = true;
             lostTargetTicks = 0;
             searchTimer = 0;
+
+            // Original EntityTurret deploys first. It only aims/fires at retraction 10.
             setOpen(true);
-            setRetraction(Math.min(10, getRetraction() + 1));
-            faceTarget(target);
+            if (getRetraction() < 10) {
+                if (++retractionStepTimer >= 3) {
+                    retractionStepTimer = 0;
+                    setRetraction(Math.min(10, getRetraction() + 1));
+                }
+            } else {
+                retractionStepTimer = 0;
+            }
+
+            if (getRetraction() == 10) {
+                // RETRACTION drives the actual visible gun doors in SentryTurretModel.
+                // Never fire until the visible doors are completely deployed.
+                setOpen(true);
+                faceTarget(target);
+
+                if (!level().isClientSide && fireTime <= 0
+                        && getRetraction() == 10
+                        && isOpen()
+                        && isTargetInFrontForFiring(target)) {
+                    fireClassicVolley(target);
+                    hasAttacked = true;
+                }
+            }
         } else {
-            if (target != null && !validTarget) setTarget(null);
-            if (++lostTargetTicks > 10) beginSearch();
-            updateSearchSweep();
+            // Shooting is finished (target dead, gone, out of range, or LOS lost).
+            // Close immediately instead of staying open for the old search sweep.
+            if (target != null) {
+                setTarget(null);
+            }
+
+            hasTarget = false;
+            hasAttacked = false;
+            searchTimer = 0;
+            fireTime = 0;
+            setOpen(false);
+
+            // Visibly retract the side gun assemblies back to the closed state.
+            if (getRetraction() > 0) {
+                if (++retractionStepTimer >= 3) {
+                    retractionStepTimer = 0;
+                    setRetraction(Math.max(0, getRetraction() - 1));
+                }
+            } else {
+                retractionStepTimer = 0;
+            }
+
+            // Bring the turret's aim back home while it closes.
+            turretAimYaw = Mth.rotLerp(0.35F, turretAimYaw, homeYaw);
+            turretAimPitch = Mth.rotLerp(0.35F, turretAimPitch, 0.0F);
+            entityData.set(AIM_YAW, turretAimYaw);
+            entityData.set(AIM_PITCH, turretAimPitch);
+
+            if (getRetraction() == 0) {
+                combatActivated = false;
+                lostTargetTicks = 0;
+                turretAimYaw = homeYaw;
+                turretAimPitch = 0.0F;
+                entityData.set(AIM_YAW, turretAimYaw);
+                entityData.set(AIM_PITCH, turretAimPitch);
+            }
         }
+
     }
 
     /**
@@ -207,6 +337,8 @@ public class SentryTurretEntity extends Monster implements RangedAttackMob {
             }
         }
     }
+public float getTurretAimYaw() { return entityData.get(AIM_YAW); }
+    public float getTurretAimPitch() { return entityData.get(AIM_PITCH); }
 
     public boolean isDifferent() { return entityData.get(DIFFERENT); }
     public void setDifferent(boolean value) { entityData.set(DIFFERENT, value); }
@@ -214,11 +346,117 @@ public class SentryTurretEntity extends Monster implements RangedAttackMob {
     public boolean isSinging() { return entityData.get(SINGING); }
     public void setSinging(boolean value) { entityData.set(SINGING, value); }
 
+    private boolean isClassicValidTarget(LivingEntity entity) {
+        // Only engage targets within two blocks.
+        if (entity == null || distanceToSqr(entity) > 4.0D) return false;
+        if (entity == null || !entity.isAlive() || entity == this) return false;
+        if (entity instanceof SentryTurretEntity) return false;
+        if (entity instanceof Player player && (player.isCreative() || player.isSpectator())) return false;
+        if (!(entity instanceof Player) && !(entity instanceof Mob)) return false;
+        return distanceToSqr(entity) <= 576.0D && hasLineOfSight(entity);
+    }
+
+    private LivingEntity findClassicTarget() {
+        // Original turret logic periodically scans rather than allowing vanilla
+        // target goals to constantly rewrite the target.
+        java.util.List<LivingEntity> candidates = level().getEntitiesOfClass(
+                LivingEntity.class,
+                getBoundingBox().inflate(2.0D),
+                this::isClassicValidTarget);
+
+        LivingEntity best = null;
+        double bestDistance = Double.MAX_VALUE;
+        for (LivingEntity candidate : candidates) {
+            // A dormant turret only notices entities crossing its forward path.
+            if (!combatActivated && !isInDetectionCone(candidate)) continue;
+            double distance = distanceToSqr(candidate);
+            if (distance < bestDistance) {
+                bestDistance = distance;
+                best = candidate;
+            }
+        }
+        return best;
+    }
+
+    private boolean isInDetectionCone(LivingEntity target) {
+        if (target == null) return false;
+
+        double dx = target.getX() - getX();
+        double dz = target.getZ() - getZ();
+        if ((dx * dx + dz * dz) < 0.0001D) return true;
+
+        float targetYaw = (float)(Mth.atan2(dz, dx) * (180.0D / Math.PI)) + 90.0F;
+        float yawFromHome = Mth.wrapDegrees(targetYaw - homeYaw);
+
+        // Same limit used by faceTarget(): only targets within 35 degrees
+        // left or right of the turret's placed-forward direction are legal.
+        return Math.abs(yawFromHome) <= 35.0F;
+    }
+
+    public boolean canAimLaserAt(LivingEntity target) {
+        return target != null && target.isAlive()
+                && isClassicValidTarget(target)
+                && isInDetectionCone(target);
+    }
+
+    public Vec3 getWeaponForwardVector() {
+        // ModelTurret's visible gun/front is 180 degrees opposite the vanilla
+        // entity-forward convention used by Vec3.directionFromRotation.
+        return Vec3.directionFromRotation(getTurretAimPitch(), getTurretAimYaw() + 180.0F).normalize();
+    }
+
+    private Vec3 getFrontMuzzlePosition(int barrelIndex) {
+        Vec3 forward = getWeaponForwardVector();
+        Vec3 right = new Vec3(-forward.z, 0.0D, forward.x).normalize();
+
+        // Four classic barrels: left/right, upper/lower. All start at the FRONT.
+        boolean rightBarrel = barrelIndex == 2 || barrelIndex == 4;
+        boolean lowerBarrel = barrelIndex == 3 || barrelIndex == 4;
+        double side = rightBarrel ? 0.28D : -0.28D;
+        double height = lowerBarrel ? 0.88D : 1.12D;
+
+        return new Vec3(getX(), getY() + height, getZ())
+                .add(forward.scale(0.48D))
+                .add(right.scale(side));
+    }
+
+    private boolean isTargetInFrontForFiring(LivingEntity target) {
+        if (target == null || !isInDetectionCone(target)) return false;
+        Vec3 muzzle = new Vec3(getX(), getY() + 1.02D, getZ());
+        Vec3 toTarget = target.getEyePosition().subtract(muzzle).normalize();
+        Vec3 weaponForward = getWeaponForwardVector().normalize();
+
+        // First gate: fixed front side. Second gate: gun is actually aimed at target.
+        return weaponForward.dot(toTarget) > 0.94D && hasLineOfSight(target);
+    }
+
     private void faceTarget(LivingEntity target) {
-        getLookControl().setLookAt(target, 45.0F, 45.0F);
-        float wantedYaw = (float)(Mth.atan2(target.getZ() - getZ(), target.getX() - getX()) * (180.0D / Math.PI)) - 90.0F;
-        setYHeadRot(Mth.rotLerp(0.45F, getYHeadRot(), wantedYaw));
-        setYRot(getYHeadRot());
+        double dx = target.getX() - getX();
+        double dz = target.getZ() - getZ();
+        double dy = target.getEyeY() - (getY() + 1.05D);
+        double horizontal = Math.sqrt(dx * dx + dz * dz);
+
+        float wantedYaw = (float)(Mth.atan2(dz, dx) * (180.0D / Math.PI)) + 90.0F;
+        float wantedPitch = (float)(-(Mth.atan2(dy, horizontal) * (180.0D / Math.PI)));
+
+        // Do not allow the turret to swing far left/right.
+        // HOME_YAW is the direction it was placed. The weapon may track only
+        // 35 degrees to either side of that forward direction.
+        float yawFromHome = Mth.wrapDegrees(wantedYaw - homeYaw);
+        yawFromHome = Mth.clamp(yawFromHome, -35.0F, 35.0F);
+        float limitedYaw = homeYaw + yawFromHome;
+
+        turretAimYaw = Mth.rotLerp(0.35F, turretAimYaw, limitedYaw);
+        turretAimPitch = Mth.rotLerp(0.35F, turretAimPitch,
+                Mth.clamp(wantedPitch, -25.0F, 25.0F));
+
+        entityData.set(AIM_YAW, turretAimYaw);
+        entityData.set(AIM_PITCH, turretAimPitch);
+
+        setYRot(turretAimYaw);
+        setYHeadRot(turretAimYaw);
+        yBodyRot = turretAimYaw;
+        yBodyRotO = turretAimYaw;
     }
 
     private void beginSearch() {
@@ -229,8 +467,8 @@ public class SentryTurretEntity extends Monster implements RangedAttackMob {
 
     private void updateSearchSweep() {
         if (searchTimer <= 0) return;
-        searchTimer--;
 
+        // Exact 1.7.10 search phases from EntityTurret.updateSearch().
         float phaseYaw;
         float pitch;
         if (searchTimer > 100) { phaseYaw = -15.0F; pitch = -10.0F; }
@@ -239,17 +477,30 @@ public class SentryTurretEntity extends Monster implements RangedAttackMob {
         else if (searchTimer > 40) { phaseYaw = -20.0F; pitch = 20.0F; }
         else { phaseYaw = 0.0F; pitch = 0.0F; }
 
-        setYRot(Mth.rotLerp(0.18F, getYRot(), homeYaw + phaseYaw));
-        setYHeadRot(getYRot());
-        setXRot(Mth.rotLerp(0.18F, getXRot(), pitch));
+        turretAimYaw = Mth.rotLerp(0.50F, turretAimYaw, homeYaw + phaseYaw);
+        turretAimPitch = Mth.rotLerp(0.50F, turretAimPitch, pitch);
+        entityData.set(AIM_YAW, turretAimYaw);
+        entityData.set(AIM_PITCH, turretAimPitch);
 
-        if (searchTimer == 0) {
-            setOpen(false);
-            setRetraction(0);
-            lostTargetTicks = 0;
-            setYRot(homeYaw);
-            setYHeadRot(homeYaw);
-        }
+        setYRot(turretAimYaw);
+        setYHeadRot(turretAimYaw);
+        yBodyRot = turretAimYaw;
+        yBodyRotO = turretAimYaw;
+    }
+
+    @Override
+    public boolean isPushable() {
+        return false;
+    }
+
+    @Override
+    protected void doPush(Entity entity) {
+        // Placed Portal turrets are anchored and do not get shoved by entities.
+    }
+
+    @Override
+    public boolean isNoGravity() {
+        return true;
     }
 
     @Override
@@ -258,15 +509,34 @@ public class SentryTurretEntity extends Monster implements RangedAttackMob {
         setDeltaMovement(0.0D, 0.0D, 0.0D);
     }
 
-    @Override
-    public void performRangedAttack(LivingEntity target, float distanceFactor) {
-        if (isDefective() || isFallen() || !isOpen() || fireTime > 0 || !hasLineOfSight(target)) return;
-        fireTime = 2; // classic turret attacks every ~2 ticks
-        TurretBulletEntity bullet = new TurretBulletEntity(level(), this, barrel);
-        barrel = barrel >= 4 ? 1 : barrel + 1;
-        level().addFreshEntity(bullet);
+    private void fireClassicVolley(LivingEntity target) {
+        // Hard safety gate: visible doors must be fully open before ANY bullet spawns.
+        if (target == null || !target.isAlive() || !isOpen() || getRetraction() != 10) {
+            return;
+        }
+
+        if (target == null || !target.isAlive() || isDefective() || isFallen()
+                || !isOpen() || getRetraction() < 10 || !hasLineOfSight(target)) return;
+
+        fireTime = 2;
+
+        // Original EntityTurret alternated paired barrels:
+        // first 1 + 3, then 2 + 4.
+        int first = fireFromLeft ? 1 : 2;
+        int second = fireFromLeft ? 3 : 4;
+        fireFromLeft = !fireFromLeft;
+
+        level().addFreshEntity(new TurretBulletEntity(level(), this, first));
+        level().addFreshEntity(new TurretBulletEntity(level(), this, second));
+
         level().playSound(null, blockPosition(), SoundEvents.DISPENSER_LAUNCH,
                 SoundSource.HOSTILE, 0.4F, 0.9F + random.nextFloat() * 0.2F);
+    }
+
+    @Override
+    public void performRangedAttack(LivingEntity target, float distanceFactor) {
+        // Required by RangedAttackMob, but intentionally not used. Classic turret
+        // firing is controlled by fireClassicVolley() from the state machine.
     }
 
     @Override
@@ -352,6 +622,9 @@ public class SentryTurretEntity extends Monster implements RangedAttackMob {
         tag.putBoolean("TurretBouncy", isBouncy());
         tag.putBoolean("TurretDefective", isDefective());
         tag.putBoolean("TurretDifferent", isDifferent());
+        tag.putDouble("TurretAnchorX", anchorSet ? anchorX : getX());
+        tag.putDouble("TurretAnchorY", anchorSet ? anchorY : getY());
+        tag.putDouble("TurretAnchorZ", anchorSet ? anchorZ : getZ());
         tag.putBoolean("TurretSinging", isSinging());
         tag.putInt("TurretRetraction", getRetraction());
         tag.putFloat("TurretHomeYaw", homeYaw);
@@ -365,6 +638,12 @@ public class SentryTurretEntity extends Monster implements RangedAttackMob {
         if (tag.contains("TurretBouncy")) setBouncy(tag.getBoolean("TurretBouncy"));
         setDefective(tag.getBoolean("TurretDefective"));
         setDifferent(tag.getBoolean("TurretDifferent"));
+        if (tag.contains("TurretAnchorX")) {
+            anchorX = tag.getDouble("TurretAnchorX");
+            anchorY = tag.getDouble("TurretAnchorY");
+            anchorZ = tag.getDouble("TurretAnchorZ");
+            anchorSet = true;
+        }
         setSinging(tag.getBoolean("TurretSinging"));
         setRetraction(tag.getInt("TurretRetraction"));
         homeYaw = tag.getFloat("TurretHomeYaw");

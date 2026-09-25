@@ -20,14 +20,30 @@ public class TurretBulletEntity extends Projectile {
     public TurretBulletEntity(EntityType<? extends TurretBulletEntity> type, Level level){super(type,level);}
     public TurretBulletEntity(Level level,SentryTurretEntity owner,int barrel){
         this(EntityInit.TURRET_BULLET.get(),level); setOwner(owner);
-        setPos(owner.getX(),owner.getEyeY()-0.15,owner.getZ());
-        float yaw=owner.getYHeadRot(), pitch=owner.getXRot();
-        Vec3 forward=Vec3.directionFromRotation(pitch,yaw).normalize();
-        Vec3 right=new Vec3(-forward.z,0,forward.x);
-        double side=(barrel<=2?0.23:-0.23), vertical=(barrel==1||barrel==3?0.06:-0.06);
-        setPos(position().add(right.scale(side)).add(0,vertical,0).add(forward.scale(0.75)));
-        setDeltaMovement(forward.scale(3.999).add(
-            random.nextGaussian()*0.021,random.nextGaussian()*0.021,random.nextGaussian()*0.021));
+        float yaw = owner.getTurretAimYaw();
+        float pitch = owner.getTurretAimPitch();
+
+        // The projectile uses the SAME aim values as the visible turret weapon.
+        Vec3 forward = owner.getWeaponForwardVector();
+        Vec3 right = new Vec3(-forward.z, 0.0D, forward.x).normalize();
+
+        // Four front-mounted muzzle positions: upper/lower on the left/right gun pods.
+        boolean rightBarrel = barrel == 2 || barrel == 4;
+        boolean lowerBarrel = barrel == 3 || barrel == 4;
+        double side = rightBarrel ? 0.27D : -0.27D;
+        double height = lowerBarrel ? 0.91D : 1.09D;
+
+        Vec3 muzzle = new Vec3(owner.getX(), owner.getY() + height, owner.getZ())
+                .add(forward.scale(0.62D))
+                .add(right.scale(side));
+        setPos(muzzle.x, muzzle.y, muzzle.z);
+
+        // Fire straight out of the FRONT of the weapon. The entity will only call
+        // this constructor after its tight front-of-gun alignment check passes.
+        setDeltaMovement(forward.scale(3.999D).add(
+                random.nextGaussian()*0.010D,
+                random.nextGaussian()*0.010D,
+                random.nextGaussian()*0.010D));
     }
     @Override protected void defineSynchedData(){}
     @Override public void tick(){

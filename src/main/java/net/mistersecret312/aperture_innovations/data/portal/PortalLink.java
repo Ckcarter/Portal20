@@ -435,12 +435,7 @@ public class PortalLink
 		Portal otherPortal = isPrimary ? link.getSecondaryPortal() : link.getPrimaryPortal();
 
 		double distance = portal.getPosition().distanceTo(entity.position());
-		// Moonshot vacuum: when the OTHER end of this link is the Moon, this real
-		// portal becomes the suction inlet. Pull players, mobs, items and other
-		// movable entities toward its teleport plane. Suction ramps up as the
-		// entity gets closer, giving the portal a strong Portal 2-style vacuum.
-		if(distance < 12.0D && otherPortal.isMoonshot()
-				&& !(entity instanceof ServerPlayer player && player.isSpectator()))
+		if(distance < 6 && otherPortal.isMoonshot() && !(entity instanceof ServerPlayer && ((ServerPlayer) entity).getAbilities().instabuild))
 		{
 			Direction direction = PortalUtilities.getPortalDirection(level, linkID, isPrimary);
 
@@ -450,11 +445,8 @@ public class PortalLink
 					direction.getOpposite().getStepY() * entity.getBbHeight() / 1.25f,
 					direction.getOpposite().getStepZ() * entity.getBbWidth() / 2f);
 
-			Vec3 toPortal = portalPos.subtract(entity.position());
-			double strength = 0.055D + (1.0D - Math.min(distance, 12.0D) / 12.0D) * 0.20D;
-			Vec3 pull = toPortal.normalize().scale(strength);
-			entity.setDeltaMovement(entity.getDeltaMovement().scale(0.92D).add(pull));
-			entity.hurtMarked = true;
+			Vec3 pushVector = portalPos.subtract(entity.position()).multiply(0.08, 0.08, 0.08);
+			entity.push(pushVector.x, pushVector.y, pushVector.z);
 			if(entity instanceof ServerPlayer player)
 				NetworkInit.INSTANCE.send(PacketDistributor.PLAYER.with(() -> player),
 					new ClientboundTeleportMomentumPacket(player.getDeltaMovement()));

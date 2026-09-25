@@ -85,12 +85,7 @@ public class CommonEvents
 					if(!portalDim.equals(level.dimension()))
 						continue;
 
-					// A portal linked to a Moon endpoint gets a much larger scan volume so
-					// the Moon vacuum can begin pulling entities before they reach the portal.
-					Portal otherPortal = isPrimary ? link.getSecondaryPortal() : link.getPrimaryPortal();
-					double portalScanRadius = otherPortal.isMoonshot() ? 12.0D : 5.0D;
-					List<Entity> entities = level.getEntitiesOfClass(Entity.class,
-							new AABB(portal.getPosition(), portal.getPosition()).inflate(portalScanRadius));
+					List<Entity> entities = level.getEntitiesOfClass(Entity.class, new AABB(portal.getPosition(), portal.getPosition()).inflate(5));
 					for(Entity entity : entities)
 					{
 						@NotNull LazyOptional<ApertureCapability> lazyCap = entity.getCapability(CapabilityInit.APERTURE);
