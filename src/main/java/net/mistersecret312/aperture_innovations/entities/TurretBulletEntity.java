@@ -17,6 +17,7 @@ import net.mistersecret312.aperture_innovations.init.EntityInit;
 /** Forge 1.20.1 port of PortalGun 1.7.10 EntityBullet. */
 public class TurretBulletEntity extends Projectile {
     private int life;
+    private Vec3 straightVelocity = Vec3.ZERO;
     public TurretBulletEntity(EntityType<? extends TurretBulletEntity> type, Level level){super(type,level);}
     public TurretBulletEntity(Level level,SentryTurretEntity owner,int barrel){
         this(EntityInit.TURRET_BULLET.get(),level); setOwner(owner);
@@ -38,16 +39,36 @@ public class TurretBulletEntity extends Projectile {
                 .add(right.scale(side));
         setPos(muzzle.x, muzzle.y, muzzle.z);
 
-        // Fire straight out of the FRONT of the weapon. The entity will only call
-        // this constructor after its tight front-of-gun alignment check passes.
-        setDeltaMovement(forward.scale(3.999D).add(
-                random.nextGaussian()*0.010D,
-                random.nextGaussian()*0.010D,
-                random.nextGaussian()*0.010D));
+        // Aim from THIS barrel's muzzle directly to the target at the instant of firing.
+        // After launch the velocity never changes: no gravity, no arc, no random spread.
+        Vec3 shotDirection = forward.normalize();
+        LivingEntity target = owner.getTarget();
+        if (target != null && target.isAlive()) {
+            Vec3 toTarget = target.getEyePosition().subtract(muzzle);
+            if (toTarget.lengthSqr() > 1.0E-8D) shotDirection = toTarget.normalize();
+        }
+        // Publish the ACTUAL launch vector. The laser renderer reads this synced vector.
+        owner.setActualShotDirection(shotDirection);
+        straightVelocity = shotDirection.scale(3.999D);
+        setDeltaMovement(straightVelocity);
     }
     @Override protected void defineSynchedData(){}
+
+    @Override
+    public boolean isNoGravity() {
+        return true;
+    }
     @Override public void tick(){
         super.tick();
+
+        // Projectile has zero ballistic drop. Preserve the launch vector exactly
+        // for its whole flight instead of allowing gravity/drag to bend it.
+        if (!straightVelocity.equals(Vec3.ZERO)) {
+            setDeltaMovement(straightVelocity);
+        } else if (!getDeltaMovement().equals(Vec3.ZERO)) {
+            straightVelocity = getDeltaMovement();
+        }
+
         if(++life>12){discard();return;}
         Vec3 from=position(), to=from.add(getDeltaMovement());
         HitResult block=level().clip(new ClipContext(from,to,ClipContext.Block.COLLIDER,ClipContext.Fluid.NONE,this));

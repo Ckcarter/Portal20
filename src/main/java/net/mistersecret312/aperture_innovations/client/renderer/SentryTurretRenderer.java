@@ -45,50 +45,43 @@ public class SentryTurretRenderer
                        PoseStack poseStack, MultiBufferSource buffer, int packedLight) {
         super.render(entity, entityYaw, partialTick, poseStack, buffer, packedLight);
 
-        // Modern port of PortalGun 1.7.10 RenderTurret's red aiming line.
-        // Unlike the failed particle version, this is a real continuous rendered line.
-        if (entity.isAlive() && !entity.isFallen()) {
-            Vec3 dir = entity.getWeaponForwardVector().normalize();
-            Vec3 start = new Vec3(0.0D, 1.02D, 0.0D).add(dir.scale(0.45D));
-            Vec3 worldStart = entity.position().add(start);
-            // Keep the red laser on at all times. When the turret has a legal
-            // front target, the beam follows that target. Otherwise it points forward.
-            net.minecraft.world.entity.LivingEntity target = entity.getTarget();
-            Vec3 worldEnd = entity.canAimLaserAt(target)
-                    ? target.getEyePosition(partialTick)
-                    : worldStart.add(dir.scale(24.0D));
+        // IMPORTANT: this runs AFTER super.render(). LivingEntityRenderer has already
+        // popped its model/body rotations, so this PoseStack is entity-translated but
+        // WORLD-ALIGNED. Do not rotate the laser by entityYaw here.
+        //
+        // The beam therefore uses the exact synchronized shot vector in world space.
+        if (entity.isAlive() && !entity.isFallen() && !entity.isDifferent()) {
+            Vec3 worldStart = entity.getLaserMuzzlePosition();
+            Vec3 worldDir = entity.getCombatLineDirection().normalize();
+            Vec3 worldEnd = worldStart.add(worldDir.scale(20.0D));
 
             net.minecraft.world.phys.HitResult hit = entity.level().clip(
                     new net.minecraft.world.level.ClipContext(
                             worldStart, worldEnd,
                             net.minecraft.world.level.ClipContext.Block.COLLIDER,
-                            net.minecraft.world.level.ClipContext.Fluid.NONE,
-                            entity));
+                            net.minecraft.world.level.ClipContext.Fluid.NONE, entity));
             if (hit.getType() != net.minecraft.world.phys.HitResult.Type.MISS) {
                 worldEnd = hit.getLocation();
             }
 
+            // Renderer origin is already at entity.position(); subtract only translation.
+            // No yaw/pitch/body/model conversion belongs here.
+            Vec3 localStart = worldStart.subtract(entity.position());
             Vec3 localEnd = worldEnd.subtract(entity.position());
-            Vec3 delta = localEnd.subtract(start);
+            Vec3 delta = localEnd.subtract(localStart);
             float len = (float)delta.length();
+
             if (len > 0.0001F) {
-                float nx = (float)(delta.x / len);
-                float ny = (float)(delta.y / len);
-                float nz = (float)(delta.z / len);
+                float nx=(float)(delta.x/len), ny=(float)(delta.y/len), nz=(float)(delta.z/len);
+                PoseStack.Pose pose=poseStack.last();
+                Matrix4f matrix=pose.pose();
+                Matrix3f normal=pose.normal();
+                VertexConsumer line=buffer.getBuffer(RenderType.lines());
 
-                PoseStack.Pose pose = poseStack.last();
-                Matrix4f matrix = pose.pose();
-                Matrix3f normal = pose.normal();
-                VertexConsumer line = buffer.getBuffer(RenderType.lines());
-
-                line.vertex(matrix, (float)start.x, (float)start.y, (float)start.z)
-                        .color(255, 0, 0, 220)
-                        .normal(normal, nx, ny, nz)
-                        .endVertex();
-                line.vertex(matrix, (float)localEnd.x, (float)localEnd.y, (float)localEnd.z)
-                        .color(255, 0, 0, 220)
-                        .normal(normal, nx, ny, nz)
-                        .endVertex();
+                line.vertex(matrix,(float)localStart.x,(float)localStart.y,(float)localStart.z)
+                        .color(255,0,0,220).normal(normal,nx,ny,nz).endVertex();
+                line.vertex(matrix,(float)localEnd.x,(float)localEnd.y,(float)localEnd.z)
+                        .color(255,0,0,220).normal(normal,nx,ny,nz).endVertex();
             }
         }
     }
